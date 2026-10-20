@@ -1,0 +1,449 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .app { padding: 1.5rem 0; }
+  .app-header { margin-bottom: 1.5rem; }
+  .app-title { font-size: 20px; font-weight: 500; color: var(--text-primary); }
+  .app-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+  .credit { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .section { margin-bottom: 1.25rem; }
+  .section-title { font-size: 13px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; padding-bottom: 6px; border-bottom: 0.5px solid var(--border); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+  .field input, .field select, .field textarea { width: 100%; font-size: 13px; padding: 7px 10px; border: 0.5px solid var(--border); border-radius: var(--radius); background: var(--surface-2); color: var(--text-primary); outline: none; transition: border-color 0.15s; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--border-accent); }
+  .field textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+  .pertemuan-block { background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+  .pertemuan-header { font-size: 12px; font-weight: 500; color: var(--text-accent); margin-bottom: 8px; }
+  .checkbox-group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .checkbox-item { display: flex; align-items: center; gap: 5px; background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; transition: all 0.15s; }
+  .checkbox-item:hover { border-color: var(--border-accent); }
+  .checkbox-item input[type=checkbox] { width: 13px; height: 13px; accent-color: var(--fill-accent); }
+  .checkbox-item span { font-size: 12px; color: var(--text-secondary); }
+  .checkbox-item.checked { background: var(--bg-accent); border-color: var(--border-accent); }
+  .checkbox-item.checked span { color: var(--text-accent); }
+  .btn-primary { background: var(--fill-accent); color: var(--on-accent); border: none; border-radius: var(--radius); padding: 10px 20px; font-size: 14px; font-weight: 500; cursor: pointer; width: 100%; margin-top: 8px; transition: opacity 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-copy { background: var(--surface-2); color: var(--text-secondary); border: 0.5px solid var(--border-strong); border-radius: var(--radius); padding: 8px 16px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
+  .btn-copy:hover { background: var(--surface-1); }
+  .btn-copy.copied { color: var(--text-success); border-color: var(--border-success); background: var(--bg-success); }
+  .result-box { margin-top: 1.5rem; background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .result-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .result-content { font-size: 13px; color: var(--text-primary); line-height: 1.7; white-space: pre-wrap; font-family: var(--font-sans); max-height: 480px; overflow-y: auto; border: 0.5px solid var(--border); border-radius: var(--radius); padding: 12px; background: var(--surface-2); }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .tag { font-size: 11px; background: var(--bg-accent); color: var(--text-accent); border-radius: 4px; padding: 2px 7px; display: inline-block; }
+  .note { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .hidden { display: none; }
+</style>
+
+<div class="app">
+  <div class="app-header">
+    <div class="app-title"><i class="ti ti-school" aria-hidden="true" style="margin-right:6px"></i>Generator Rencana Pembelajaran Mendalam (RPM)</div>
+    <div class="app-subtitle">Buat rencana pembelajaran terstruktur untuk semua jenjang dan mata pelajaran</div>
+    <div class="credit">Dibuat oleh: <strong>Ahmad Budi Leksono</strong></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Identitas Satuan Pendidikan</div>
+    <div class="grid-2" style="margin-bottom:10px">
+      <div class="field">
+        <label>Nama Satuan Pendidikan</label>
+        <input type="text" id="satuan" placeholder="Contoh: MI Al-Hikmah Surabaya">
+      </div>
+      <div class="field">
+        <label>Jenjang / Fase</label>
+        <select id="fase">
+          <option value="">-- Pilih Fase --</option>
+          <option value="Fondasi (PAUD/TK)">Fondasi (PAUD/TK)</option>
+          <option value="A (Kelas 1-2 SD/MI)">A (Kelas 1-2 SD/MI)</option>
+          <option value="B (Kelas 3-4 SD/MI)">B (Kelas 3-4 SD/MI)</option>
+          <option value="C (Kelas 5-6 SD/MI)">C (Kelas 5-6 SD/MI)</option>
+          <option value="D (Kelas 7-9 SMP/MTs)">D (Kelas 7-9 SMP/MTs)</option>
+          <option value="E (Kelas 10 SMA/MA/SMK)">E (Kelas 10 SMA/MA/SMK)</option>
+          <option value="F (Kelas 11-12 SMA/MA/SMK)">F (Kelas 11-12 SMA/MA/SMK)</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Kelas</label>
+        <input type="text" id="kelas" placeholder="Contoh: 7A, 10 IPA, XI TKJ">
+      </div>
+      <div class="field">
+        <label>Mata Pelajaran</label>
+        <input type="text" id="mapel" placeholder="Contoh: Matematika, IPA, Bahasa Indonesia">
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Identitas Guru & Kepala Sekolah</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Nama Guru Penyusun</label>
+        <input type="text" id="guru" placeholder="Nama lengkap guru">
+      </div>
+      <div class="field">
+        <label>NIP Guru</label>
+        <input type="text" id="nipGuru" placeholder="Contoh: 198501012010011001">
+      </div>
+      <div class="field">
+        <label>Nama Kepala Sekolah/Madrasah</label>
+        <input type="text" id="kepsek" placeholder="Nama lengkap kepala sekolah">
+      </div>
+      <div class="field">
+        <label>NIP Kepala Sekolah/Madrasah</label>
+        <input type="text" id="nipKepsek" placeholder="Contoh: 197603052005011002">
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Capaian & Materi Pembelajaran</div>
+    <div class="field" style="margin-bottom:10px">
+      <label>Capaian Pembelajaran (CP)</label>
+      <textarea id="cp" placeholder="Tuliskan Capaian Pembelajaran sesuai kurikulum..."></textarea>
+    </div>
+    <div class="field">
+      <label>Materi Pelajaran</label>
+      <textarea id="materi" placeholder="Tuliskan materi pokok yang akan diajarkan..." style="min-height:56px"></textarea>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Waktu & Pertemuan</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Jumlah Pertemuan</label>
+        <input type="number" id="jumlahPertemuan" min="1" max="12" value="3" oninput="buildPertemuanBlocks()">
+      </div>
+      <div class="field">
+        <label>Durasi Setiap Pertemuan</label>
+        <input type="text" id="durasi" placeholder="Contoh: 2 x 45 menit">
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Praktik Pedagogis per Pertemuan</div>
+    <div id="pertemuanBlocks"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Dimensi Lulusan (pilih satu atau lebih)</div>
+    <div class="checkbox-group" id="dimensiGroup">
+      <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="Keimanan & Ketakwaan"><span>Keimanan & Ketakwaan</span></label>
+      <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="Kewargaan"><span>Kewargaan</span></label>
+      <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="Penalaran Kritis"><span>Penalaran Kritis</span></label>
+      <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="Kreativitas"><span>Kreativitas</span></label>
+      <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="Kolaborasi"><span>Kolaborasi</span></label>
+      <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="Kemandirian"><span>Kemandirian</span></label>
+      <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="Kesehatan"><span>Kesehatan</span></label>
+      <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="Komunikasi"><span>Komunikasi</span></label>
+    </div>
+  </div>
+
+  <button class="btn-primary" id="generateBtn" onclick="generateRPM()">
+    <i class="ti ti-sparkles" aria-hidden="true"></i>
+    Generate Rencana Pembelajaran Mendalam
+  </button>
+
+  <div class="result-box hidden" id="resultBox">
+    <div class="result-header">
+      <div class="result-title"><i class="ti ti-file-text" aria-hidden="true" style="margin-right:6px"></i>Hasil Rencana Pembelajaran Mendalam</div>
+      <button class="btn-copy" id="copyBtn" onclick="copyResult()">
+        <i class="ti ti-copy" aria-hidden="true"></i>
+        Salin untuk Word/Google Docs
+      </button>
+    </div>
+    <div class="result-content" id="resultContent"></div>
+  </div>
+</div>
+
+<script>
+const pedagogiOptions = ["Inkuiri-Discovery Learning","PjBL (Project Based Learning)","Problem Based Learning","Diskusi Kolaboratif","Game Based Learning","Station Learning"];
+
+function buildPertemuanBlocks() {
+  const n = parseInt(document.getElementById('jumlahPertemuan').value) || 1;
+  const container = document.getElementById('pertemuanBlocks');
+  container.innerHTML = '';
+  for (let i = 1; i <= n; i++) {
+    const div = document.createElement('div');
+    div.className = 'pertemuan-block';
+    div.innerHTML = `<div class="pertemuan-header">Pertemuan ${i}</div>
+      <div class="checkbox-group" id="pedagogi-${i}">
+        ${pedagogiOptions.map(o => `<label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="${o}"><span>${o}</span></label>`).join('')}
+      </div>`;
+    container.appendChild(div);
+  }
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  el.querySelector('input[type=checkbox]').checked = el.classList.contains('checked');
+}
+
+function getChecked(containerId) {
+  return [...document.querySelectorAll(`#${containerId} input[type=checkbox]:checked`)].map(i => i.value);
+}
+
+function getDimensi() {
+  return [...document.querySelectorAll('#dimensiGroup input[type=checkbox]:checked')].map(i => i.value);
+}
+
+function getPedagogiPertemuan() {
+  const n = parseInt(document.getElementById('jumlahPertemuan').value) || 1;
+  const result = [];
+  for (let i = 1; i <= n; i++) {
+    const checked = [...document.querySelectorAll(`#pedagogi-${i} input[type=checkbox]:checked`)].map(c => c.value);
+    result.push({ pertemuan: i, pedagogi: checked.length > 0 ? checked.join(', ') : 'Inkuiri-Discovery Learning' });
+  }
+  return result;
+}
+
+async function generateRPM() {
+  const satuan = document.getElementById('satuan').value.trim();
+  const fase = document.getElementById('fase').value;
+  const kelas = document.getElementById('kelas').value.trim();
+  const mapel = document.getElementById('mapel').value.trim();
+  const guru = document.getElementById('guru').value.trim();
+  const nipGuru = document.getElementById('nipGuru').value.trim();
+  const kepsek = document.getElementById('kepsek').value.trim();
+  const nipKepsek = document.getElementById('nipKepsek').value.trim();
+  const cp = document.getElementById('cp').value.trim();
+  const materi = document.getElementById('materi').value.trim();
+  const durasi = document.getElementById('durasi').value.trim();
+  const jumlahPertemuan = document.getElementById('jumlahPertemuan').value;
+  const dimensi = getDimensi();
+  const pedagogiPertemuan = getPedagogiPertemuan();
+
+  if (!satuan || !fase || !kelas || !mapel || !guru || !kepsek || !cp || !materi || !durasi) {
+    alert('Mohon lengkapi semua field yang diperlukan!');
+    return;
+  }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Sedang membuat RPM...';
+
+  const promptText = `Kamu adalah ahli penyusun Rencana Pembelajaran Mendalam (RPM) untuk kurikulum pendidikan Indonesia. Buatkan RPM yang lengkap, terstruktur, dan profesional berdasarkan data berikut:
+
+DATA SEKOLAH:
+- Satuan Pendidikan: ${satuan}
+- Fase/Jenjang: ${fase}
+- Kelas: ${kelas}
+- Mata Pelajaran: ${mapel}
+
+GURU & KEPALA SEKOLAH:
+- Guru Penyusun: ${guru}
+- NIP Guru: ${nipGuru || '-'}
+- Kepala Sekolah/Madrasah: ${kepsek}
+- NIP Kepala Sekolah: ${nipKepsek || '-'}
+
+KONTEN PEMBELAJARAN:
+- Capaian Pembelajaran: ${cp}
+- Materi Pelajaran: ${materi}
+- Jumlah Pertemuan: ${jumlahPertemuan} pertemuan
+- Durasi: ${durasi}
+
+DIMENSI LULUSAN: ${dimensi.length > 0 ? dimensi.join(', ') : 'Penalaran Kritis, Kolaborasi, Komunikasi'}
+
+PRAKTIK PEDAGOGIS:
+${pedagogiPertemuan.map(p => `- Pertemuan ${p.pertemuan}: ${p.pedagogi}`).join('\n')}
+
+INSTRUKSI OUTPUT:
+Hasilkan RPM dalam format Markdown bersih yang rapi, siap disalin ke Word/Google Docs. Gunakan heading # ## ### yang konsisten, gunakan tabel Markdown untuk asesmen, dan gunakan bullet list untuk langkah-langkah. Format harus terstruktur persis seperti ini:
+
+---
+
+# RENCANA PEMBELAJARAN MENDALAM (RPM)
+
+| | |
+|---|---|
+| **Satuan Pendidikan** | ${satuan} |
+| **Mata Pelajaran** | ${mapel} |
+| **Fase / Kelas** | ${fase} / ${kelas} |
+| **Jumlah Pertemuan** | ${jumlahPertemuan} pertemuan |
+| **Durasi** | ${durasi} |
+| **Tahun Pelajaran** | 2024/2025 |
+
+---
+
+## BAGIAN 1: IDENTIFIKASI
+
+### A. Identifikasi Siswa
+[Uraikan karakteristik siswa, kebutuhan belajar, dan konteks kelas yang relevan dengan fase dan jenjang]
+
+### B. Materi Pelajaran
+[Uraikan cakupan dan ruang lingkup materi secara jelas]
+
+### C. Capaian Dimensi Lulusan
+[Uraikan capaian dari setiap dimensi lulusan yang dipilih dan kaitannya dengan pembelajaran]
+
+---
+
+## BAGIAN 2: DESAIN PEMBELAJARAN
+
+### A. Capaian Pembelajaran
+[Tuliskan CP yang diberikan secara utuh]
+
+### B. Lintas Disiplin Ilmu
+[Generate minimal 3 keterkaitan dengan disiplin ilmu lain yang relevan]
+
+### C. Tujuan Pembelajaran
+[Buat minimal 3-5 tujuan pembelajaran yang SMART, relevan dengan CP dan materi]
+
+### D. Topik Pembelajaran
+[Tuliskan topik utama dan sub-topik yang akan dipelajari]
+
+### E. Praktik Pedagogis per Pertemuan
+| Pertemuan | Praktik Pedagogis | Deskripsi Singkat Aktivitas |
+|---|---|---|
+${pedagogiPertemuan.map(p => `| ${p.pertemuan} | ${p.pedagogi} | [isi deskripsi] |`).join('\n')}
+
+### F. Kemitraan Pembelajaran
+[Generate: orang tua, komunitas, atau instansi yang bisa dilibatkan]
+
+### G. Lingkungan Pembelajaran
+[Generate: pengaturan ruang kelas, lab, luar ruangan, dll. yang mendukung]
+
+### H. Pemanfaatan Digital
+[Generate: tools digital, platform, atau sumber daya digital yang relevan]
+
+---
+
+## BAGIAN 3: PENGALAMAN BELAJAR
+
+Uraikan pengalaman belajar per pertemuan dengan struktur berikut untuk SETIAP pertemuan:
+
+### Pertemuan [N]: [Topik Pertemuan]
+**Praktik Pedagogis:** [sesuai input]
+**Durasi:** ${durasi}
+
+#### 1. Awal (Berkesadaran, Bermakna, Menggembirakan)
+[Kegiatan pembuka yang menarik, apersepsi, dan membangun motivasi - minimal 3 kegiatan]
+
+#### 2. Inti
+**Memahami (Berkesadaran, Bermakna):**
+[Kegiatan inti pemahaman konsep - minimal 3 kegiatan dengan langkah detail]
+
+**Mengaplikasi (Berkesadaran, Bermakna):**
+[Kegiatan aplikasi dan praktik - minimal 3 kegiatan dengan langkah detail]
+
+#### 3. Refleksi (Berkesadaran, Menggembirakan)
+[Kegiatan refleksi pembelajaran - minimal 2 kegiatan]
+
+#### 4. Penutup (Berkesadaran)
+[Kegiatan penutup, rangkuman, dan persiapan pertemuan berikutnya]
+
+[Ulangi struktur ini untuk setiap pertemuan]
+
+---
+
+## BAGIAN 4: ASESMEN PEMBELAJARAN
+
+### A. Asesmen Awal (Diagnostik/Apersepsi)
+[Uraikan bentuk asesmen diagnostik di awal pembelajaran]
+
+| Aspek yang Dinilai | Instrumen | Waktu |
+|---|---|---|
+| [aspek] | [instrumen] | [waktu] |
+
+### B. Asesmen Proses (Formatif)
+[Uraikan bentuk asesmen selama proses pembelajaran]
+
+| Aspek yang Dinilai | Teknik | Instrumen | Waktu |
+|---|---|---|---|
+| Observasi Partisipasi | Pengamatan langsung | Lembar observasi | Setiap pertemuan |
+| [tambah baris] | [teknik] | [instrumen] | [waktu] |
+
+### C. Asesmen Akhir (Sumatif)
+[Uraikan bentuk asesmen di akhir pembelajaran: produk, tugas, presentasi, atau portofolio]
+
+| Jenis Asesmen | Deskripsi | Bobot |
+|---|---|---|
+| [jenis] | [deskripsi] | [persen] |
+
+### D. Rubrik Penilaian Utama
+[Buat satu rubrik penilaian utama dalam format tabel dengan 4 level: Belum Berkembang, Mulai Berkembang, Berkembang Sesuai Harapan, Sangat Berkembang]
+
+| Kriteria | Belum Berkembang (1) | Mulai Berkembang (2) | Berkembang Sesuai Harapan (3) | Sangat Berkembang (4) |
+|---|---|---|---|---|
+| [kriteria] | [deskripsi] | [deskripsi] | [deskripsi] | [deskripsi] |
+
+---
+
+*Dibuat dengan Generator RPM — Ahmad Budi Leksono*
+
+---
+
+[TANDA TANGAN]
+Di bawah ini tambahkan blok tanda tangan dengan format:
+
+Mengetahui,                                                    [kota], [tanggal sekarang]
+Kepala ${satuan},                                              Guru Mata Pelajaran,
+
+
+${kepsek}                                                      ${guru}
+NIP. ${nipKepsek || '-'}                                       NIP. ${nipGuru || '-'}
+
+---
+
+Pastikan output:
+1. Lengkap dan detail untuk setiap bagian
+2. Relevan dengan fase, jenjang, dan mata pelajaran
+3. Menggunakan bahasa Indonesia yang baik dan benar
+4. Format Markdown bersih (# heading, tabel |---|, bullet -)
+5. Setiap pertemuan diuraikan lengkap dalam Bagian 3`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: promptText }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.map(b => b.text || '').join('') || '';
+
+    if (!text) throw new Error('Tidak ada hasil');
+
+    document.getElementById('resultContent').textContent = text;
+    document.getElementById('resultBox').classList.remove('hidden');
+    document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window._rpmResult = text;
+
+  } catch (err) {
+    alert('Terjadi kesalahan saat membuat RPM. Silakan coba lagi.');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-sparkles" aria-hidden="true"></i> Generate Rencana Pembelajaran Mendalam';
+  }
+}
+
+function copyResult() {
+  const text = window._rpmResult || document.getElementById('resultContent').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.classList.add('copied');
+    btn.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i> Berhasil disalin!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = '<i class="ti ti-copy" aria-hidden="true"></i> Salin untuk Word/Google Docs';
+    }, 2500);
+  }).catch(() => alert('Gagal menyalin. Coba salin manual dari kotak di atas.'));
+}
+
+buildPertemuanBlocks();
+</script>
